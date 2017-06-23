@@ -58,28 +58,31 @@ build_image() {
 
   echo 6 - Replacing tag from "$S3_NAME" to "scality/s3server"
 
-  docker tag $S3_NAME nicolas2bert/tests3server:${TAG}latest
+  docker tag $S3_NAME scality/s3server:${TAG}latest
 
   echo 7 - Pushing image scality/s3server:${TAG}latest
 
-  docker push nicolas2bert/tests3server:${TAG}latest
+  docker push scality/s3server:${TAG}latest
 
   echo 8 - Replacing tag from $S3_NAME to scality/s3server:${TAG}${SHORT_HASH}
 
-  docker tag $S3_NAME nicolas2bert/tests3server:${TAG}${SHORT_HASH}
+  docker tag $S3_NAME scality/s3server:${TAG}${SHORT_HASH}
 
   echo 9 - Pushing image scality/s3server:${TAG}${SHORT_HASH}
 
-  docker push nicolas2bert/tests3server:${TAG}${SHORT_HASH}
+  docker push scality/s3server:${TAG}${SHORT_HASH}
 
 }
 
-clear
+clean() {
+    docker stop $(docker ps -a -q)
+    docker rm $(docker ps -a -q)
+    docker rmi $(docker images -q) -f
+    rm -rf s3
+}
 
-docker stop $(docker ps -a -q)
-docker rm $(docker ps -a -q)
-docker rmi $(docker images -q) -f
-rm -rf s3
+clear
+clean
 
 git clone https://github.com/scality/s3
 
@@ -96,3 +99,5 @@ build_image "file"
 echo Starting building the memory Docker image
 
 build_image "mem"
+
+clean
