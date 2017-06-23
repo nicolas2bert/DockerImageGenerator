@@ -21,39 +21,55 @@ build_image() {
 
       echo ERROR - no parameter passed
       exit 1
-      
+
   fi
 
   SHORT_HASH=$(git rev-parse --short HEAD)
 
+  echo 1 - Building image called: $S3_NAME from $DOCKERFILE_NAME
+
   docker build ./ -t $S3_NAME -f $DOCKERFILE_NAME
 
-  echo Testing the build
+  echo 2 - Getting containder id
 
   CONTAINER_ID=$(docker run -d -p 8000:8000 ${S3_NAME})
 
+  echo 3 - CONTAINER_ID = $CONTAINER_ID
+
+  echo 3.1 - Listing bucket
+
+  LIST_BUCKETS=$(aws --profile=local --endpoint-url=http://localhost:8000 s3 ls)
+
+  echo 3.2 - LIST_BUCKETS = $LIST_BUCKETS
+
   MAKE_BUCKET=$(aws --profile=local --endpoint-url=http://localhost:8000 s3 mb s3://mybucket)
+
+  echo 4 -  MAKE_BUCKET = $MAKE_BUCKET
 
   if [ "$MAKE_BUCKET" != "make_bucket: s3://mybucket/" ]; then
       echo ERROR - unable to create bucket: $MAKE_BUCKET
-      docker stop $S3_NAME
+      docker stop $CONTAINER_ID
       exit 1
   fi
 
+  echo 5 - Stopping Docker container $CONTAINER_ID
+
   docker stop $CONTAINER_ID
 
-  echo changing tag from "$S3_NAME" to "scality/s3server"
+  echo 6 - Replacing tag from "$S3_NAME" to "scality/s3server"
 
-  # docker tag s3 scality/s3server
   docker tag $S3_NAME nicolas2bert/tests3server:${TAG}latest
 
-  # docker push scality/s3server
+  echo 7 - Pushing image scality/s3server:${TAG}latest
+
   docker push nicolas2bert/tests3server:${TAG}latest
 
-  # docker tag s3 scality/s3server:
+  echo 8 - Replacing tag from $S3_NAME to scality/s3server:${TAG}${SHORT_HASH}
+
   docker tag $S3_NAME nicolas2bert/tests3server:${TAG}${SHORT_HASH}
 
-  # docker push scality/s3server:GIT_HASH_TAG
+  echo 9 - Pushing image scality/s3server:${TAG}${SHORT_HASH}
+
   docker push nicolas2bert/tests3server:${TAG}${SHORT_HASH}
 
 }
