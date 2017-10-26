@@ -46,7 +46,7 @@ build_image() {
 
   echo 4 -  MAKE_BUCKET = $MAKE_BUCKET
 
-  if [ "$MAKE_BUCKET" != "make_bucket: s3://mybucket/" ]; then
+  if [ "$MAKE_BUCKET" != "make_bucket: mybucket" ]; then
       echo ERROR - unable to create bucket: $MAKE_BUCKET
       docker stop $CONTAINER_ID
       exit 1
