@@ -36,6 +36,10 @@ build_image() {
 
   echo 3 - CONTAINER_ID = $CONTAINER_ID
 
+  echo 3.0 - Sleep 20 seconds
+
+  sleep 20
+
   echo 3.1 - Listing bucket
 
   LIST_BUCKETS=$(aws --profile=local --endpoint-url=http://localhost:8000 s3 ls)
